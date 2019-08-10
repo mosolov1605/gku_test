@@ -7,18 +7,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
-@EnableAuthorizationServer
-@EnableResourceServer
-@RestController
-public class GkuTest extends SpringBootServletInitializer {
+public class GkuTest extends SpringBootServletInitializer{
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
@@ -29,16 +20,4 @@ public class GkuTest extends SpringBootServletInitializer {
 
         SpringApplication.run(GkuTest.class, args);
     }
-
-    @RequestMapping("/product")
-    public String getProduct() {
-        return "Pppp";
-    }
-
-    @GetMapping("/login")
-    public String getLoginPage(Model model) {
-        return "login";
-    }
-
-
 }

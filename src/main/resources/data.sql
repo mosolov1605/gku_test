@@ -11,6 +11,7 @@ create table usr (
     id int auto_increment primary key,
     name varchar2(255) not null,
     password varchar2(255) not null,
+    role varchar2(255) not null,
     company_id int, foreign key (company_id) references company(id)
 );
 
@@ -44,17 +45,17 @@ insert into company (name) values ('comp01'),
                                   ('comp13'),
                                   ('comp14');
 
-insert into usr (name, password, company_id) VALUES ('test01','test01', (select c.id from company c where c.name = 'comp01')),
-                                                    ('test02','test02', (select c.id from company c where c.name = 'comp02')),
-                                                    ('test03','test03', (select c.id from company c where c.name = 'comp03')),
-                                                    ('test04','test04', (select c.id from company c where c.name = 'comp04')),
-                                                    ('test05','test05', (select c.id from company c where c.name = 'comp05')),
-                                                    ('test06','test06', (select c.id from company c where c.name = 'comp06')),
-                                                    ('test07','test07', (select c.id from company c where c.name = 'comp07')),
-                                                    ('test08','test08', (select c.id from company c where c.name = 'comp08')),
-                                                    ('test09','test09', (select c.id from company c where c.name = 'comp09')),
-                                                    ('test10','test10', (select c.id from company c where c.name = 'comp10')),
-                                                    ('test11','test11', (select c.id from company c where c.name = 'comp11')),
-                                                    ('test12','test12', (select c.id from company c where c.name = 'comp12')),
-                                                    ('test13','test13', (select c.id from company c where c.name = 'comp13')),
-                                                    ('test14','test14', (select c.id from company c where c.name = 'comp14'));
+insert into usr (name, password, role, company_id) VALUES ('test01','test01', 'USER',(select c.id from company c where c.name = 'comp01')),
+                                                    ('test02','test02', 'USER',(select c.id from company c where c.name = 'comp02')),
+                                                    ('test03','test03', 'USER',(select c.id from company c where c.name = 'comp03')),
+                                                    ('test04','test04', 'USER',(select c.id from company c where c.name = 'comp04')),
+                                                    ('test05','test05', 'USER',(select c.id from company c where c.name = 'comp05')),
+                                                    ('test06','test06', 'USER',(select c.id from company c where c.name = 'comp06')),
+                                                    ('test07','test07', 'USER',(select c.id from company c where c.name = 'comp07')),
+                                                    ('test08','test08', 'USER',(select c.id from company c where c.name = 'comp08')),
+                                                    ('test09','test09', 'USER',(select c.id from company c where c.name = 'comp09')),
+                                                    ('test10','test10', 'USER',(select c.id from company c where c.name = 'comp10')),
+                                                    ('test11','test11', 'USER',(select c.id from company c where c.name = 'comp11')),
+                                                    ('test12','test12', 'USER',(select c.id from company c where c.name = 'comp12')),
+                                                    ('test13','test13', 'USER',(select c.id from company c where c.name = 'comp13')),
+                                                    ('test14','test14', 'USER',(select c.id from company c where c.name = 'comp14'));
