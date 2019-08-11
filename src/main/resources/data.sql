@@ -21,6 +21,7 @@ create table document (
     txt text,
     date_create timestamp not null ,
     date_close timestamp,
+    date_delete timestamp,
     company_id int not null,
     counter_company_id int not null,
     confirm_company boolean default false,

@@ -1,18 +1,13 @@
 package ru.mosolov.gku.models;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-public class Company {
+public class Company extends BaseDao{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="id", nullable = false)
-    private Integer id;
-
-    @Column(name="name", nullable = false)
-    private String name;
 }

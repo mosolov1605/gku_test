@@ -1,21 +1,15 @@
 package ru.mosolov.gku.models;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-public class Document {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", nullable = false)
-    private Integer id;
-
-    @Column(name="name", nullable = false)
-    private String name;
+public class Document extends BaseDao{
 
     @Lob
     @Column(name="txt")
@@ -26,6 +20,9 @@ public class Document {
 
     @Column(name="date_close")
     private LocalDateTime dateClose;
+
+    @Column(name="date_delete")
+    private LocalDateTime dateDelete;
 
     @Column(name="confirm_company")
     private Boolean confirmCompany;
@@ -40,4 +37,27 @@ public class Document {
     @ManyToOne(optional = false)
     @JoinColumn(name = "counter_company_id", nullable=false)
     private Company counterCompany;
+
+    public boolean isClosed() {
+        return dateClose != null;
+    }
+
+    public boolean isDeleted() {
+        return dateDelete != null;
+    }
+
+    public boolean isOpen() {
+        return !isClosed() && !isDeleted();
+    }
+
+    public boolean isLockRemove() {
+        return isOpen() && (confirmCompany ^ confirmCounterCompany);
+    }
+
+    public Company getHolderDoc() {
+        if (dateDelete == null && confirmCompany) {
+            return counterCompany;
+        }
+        return company;
+    }
 }
