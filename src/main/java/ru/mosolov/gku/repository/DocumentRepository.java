@@ -13,12 +13,13 @@ import java.util.Optional;
 public interface DocumentRepository extends JpaRepository<Document, Integer> {
 
     Optional<Document> findByName(final String name);
+
     @Query(value = "select d " +
             "from Document d " +
             "inner join d.company c "+
             "inner join d.counterCompany cc " +
             "where d.dateClose is null " +
-            "and d.dateDelete is null " +
+            "and d.dateDelete is null "+
             "and (" +
             "(c.id = ?1 and d.confirmCompany <> TRUE) " +
             "or (cc.id = ?1 and d.confirmCounterCompany <> TRUE and d.confirmCompany = TRUE))")

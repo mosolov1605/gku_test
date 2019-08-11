@@ -25,10 +25,10 @@ public class Document extends BaseDao{
     private LocalDateTime dateDelete;
 
     @Column(name="confirm_company")
-    private Boolean confirmCompany;
+    private Boolean confirmCompany = false;
 
     @Column(name="confirm_counter_company")
-    private Boolean confirmCounterCompany;
+    private Boolean confirmCounterCompany = false;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "company_id", nullable=false)

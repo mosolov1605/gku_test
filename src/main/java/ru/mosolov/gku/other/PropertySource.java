@@ -15,22 +15,22 @@ import java.util.List;
 @Setter
 public class PropertySource {
 
-    @Value("start.lock.change.doc: 20:00")
+    @Value("${start.lock.change.doc: 20:00}")
     private String startLockChangeDoc;
 
-    @Value("end.lock.change.doc: 07:00")
+    @Value("${end.lock.change.doc: 07:00}")
     private String endLockChangeDoc;
 
-    @Value("total.doc.workflow: 10")
+    @Value("${total.doc.workflow: 10}")
     private String totalDocWorkflow;
 
-    @Value("between.doc.workflow: 2")
+    @Value("${between.doc.workflow: 2}")
     private String betweenDocWorkflow;
 
-    @Value("minute.restriction.create.doc: 60")
+    @Value("${minute.restriction.create.doc: 60}")
     private String minuteRestrictionCreateDoc;
 
-    @Value("count.restriction.create.doc: 5")
+    @Value("${count.restriction.create.doc: 5}")
     private String countRestrictionCreateDoc;
 
     public LocalDateTime getStartLockTime (){

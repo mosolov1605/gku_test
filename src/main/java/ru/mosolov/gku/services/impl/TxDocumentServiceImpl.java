@@ -3,6 +3,7 @@ package ru.mosolov.gku.services.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import ru.mosolov.gku.models.Company;
 import ru.mosolov.gku.models.Document;
 import ru.mosolov.gku.other.CheckUtils;
@@ -44,7 +45,7 @@ public class TxDocumentServiceImpl implements TxDocumentService {
             document.setErrorMessage("Document can`t to have two equals companies for the docs workflow");
             return document;
         }
-        final int restTotal = Integer.parseInt(propertySource.getTotalDocWorkflow());
+        final int restTotal = Integer.parseInt(StringUtils.trimAllWhitespace(propertySource.getTotalDocWorkflow()));
         final String restrictOne = checkTotalDocWorkFlows(document.getCompany(), restTotal);
         if (!restrictOne.equals("success")) {
             document.setSuccess(false);
@@ -59,34 +60,37 @@ public class TxDocumentServiceImpl implements TxDocumentService {
         }
 
         final Document docExist = documentService.getDocumentByName(document.getName());
-        if (!docExist.getSuccess()) {
 
-            final int countDocWorkflow = documentService
-                    .getOpenDocsBetweenTwoCompanies(document.getCompany(), document.getCounterCompany()).size();
-            if (countDocWorkflow >= Integer.parseInt(propertySource.getBetweenDocWorkflow())) {
-                document.setSuccess(false);
-                document.setErrorMessage(String
-                        .format("Companies already have creating %d docs workflow between it", countDocWorkflow));
-            }
-            final LocalDateTime now = LocalDateTime.now();
-            final LocalDateTime oldTime = now.minusMinutes(Integer.parseInt(propertySource.getMinuteRestrictionCreateDoc()));
-            List<Document> listDoc = documentService
-                    .getOpenDocsBetweenDates(document.getCompany(), oldTime, now)
-                    .stream()
-                    .filter(doc -> doc
-                            .getCompany().getId().equals(document.getCompany().getId())).collect(Collectors.toList());
-            if (listDoc.size() >= Integer.parseInt(propertySource.getCountRestrictionCreateDoc())) {
-                document.setSuccess(false);
-                document.setErrorMessage(String
-                        .format("Company with name %s already have creating %d doc workflows for %d minute(s)." +
-                                " This is overtime-restriction."
-                                , document.getCompany().getName()
-                                , propertySource.getCountRestrictionCreateDoc()
-                                , propertySource.getMinuteRestrictionCreateDoc()));
-                return document;
-            }
+        if (docExist.getSuccess()){
+            document.setSuccess(false);
+            document.setErrorMessage(String.format("Document with name %s already exist", document.getName()));
+            return document;
         }
 
+        final int countDocWorkflow = documentService
+                .getOpenDocsBetweenTwoCompanies(document.getCompany(), document.getCounterCompany()).size();
+        if (countDocWorkflow >= Integer.parseInt(StringUtils.trimAllWhitespace(propertySource.getBetweenDocWorkflow()))) {
+            document.setSuccess(false);
+            document.setErrorMessage(String
+                    .format("Companies already have creating %d docs workflow between it", countDocWorkflow));
+        }
+        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime oldTime = now.minusMinutes(Integer.parseInt(StringUtils.trimAllWhitespace(propertySource.getMinuteRestrictionCreateDoc())));
+        List<Document> listDoc = documentService
+                .getOpenDocsBetweenDates(document.getCompany(), oldTime, now)
+                .stream()
+                .filter(doc -> doc
+                        .getCompany().getId().equals(document.getCompany().getId())).collect(Collectors.toList());
+        if (listDoc.size() >= Integer.parseInt(StringUtils.trimAllWhitespace(propertySource.getCountRestrictionCreateDoc()))) {
+            document.setSuccess(false);
+            document.setErrorMessage(String
+                    .format("Company with name %s already have creating %s doc workflows for %s minute(s)." +
+                            " This is overtime-restriction."
+                            , document.getCompany().getName()
+                            , propertySource.getCountRestrictionCreateDoc()
+                            , propertySource.getMinuteRestrictionCreateDoc()));
+            return document;
+        }
 
         return documentRepository.save(document);
     }
