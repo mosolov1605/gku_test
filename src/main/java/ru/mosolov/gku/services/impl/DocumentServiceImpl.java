@@ -1,5 +1,6 @@
 package ru.mosolov.gku.services.impl;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.mosolov.gku.models.BaseDao;
@@ -78,7 +79,7 @@ public class DocumentServiceImpl implements DocumentService {
         return new ArrayList<>(Collections.singleton(getErrorObject(Document.class, "Documents not found")));
     }
 
-    private <T extends BaseDao> T getErrorObject(Class<T> clazz, final String errorMessage) {
+    private <T extends BaseDao> T getErrorObject(@NotNull Class<T> clazz, final String errorMessage) {
         final T result;
         try {
             result = clazz.getDeclaredConstructor().newInstance();

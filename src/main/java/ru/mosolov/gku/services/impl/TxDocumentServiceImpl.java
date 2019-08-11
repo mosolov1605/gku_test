@@ -48,6 +48,13 @@ public class TxDocumentServiceImpl implements TxDocumentService {
 
     @Override
     public Document confirmDocument(final Integer companyId,final Document document) {
+
+        if (document.isDeleted()) {
+            document.setSuccess(false);
+            document.setErrorMessage("Confirm is impossible. Document is deleted");
+            return document;
+        }
+
         if (companyId.equals(document.getCompany().getId())) {
             if (document.getConfirmCompany()) {
                 document.setSuccess(false);
@@ -157,7 +164,8 @@ public class TxDocumentServiceImpl implements TxDocumentService {
 
     @Override
     public Document changeDocument(final Company company,final  Document document) {
-        return null;
+
+        return changeDocument(company.getId(), document);
     }
 
     @Override
@@ -171,17 +179,37 @@ public class TxDocumentServiceImpl implements TxDocumentService {
         if (document.isClosed()) {
             document.setSuccess(false);
             document.setErrorMessage("Change is impossible. Document is closed");
+            return document;
         }
         if (!companyId.equals(document.getHolderDoc().getId())) {
             document.setSuccess(false);
             document.setErrorMessage("Company can`t change this document, because is not an change-holder it in moment");
+            return document;
         }
 
-        return null;
+        document.setDateClose(LocalDateTime.now());
+        documentRepository.saveAndFlush(document);
+        final Document newDocument = new Document();
+        newDocument.setCompany(document.getCounterCompany());
+        newDocument.setCounterCompany(document.getCompany());
+        newDocument.setConfirmCompany(false);
+        newDocument.setConfirmCounterCompany(false);
+        newDocument.setDateCreate(LocalDateTime.now());
+        newDocument.setName(document.getName());
+        newDocument.setText(document.getText());
+        return documentRepository.save(document);
     }
 
     @Override
     public Document changeDocument(final String companyName,final  Document document) {
-        return null;
+
+        final Company company = companyRepository.findByName(companyName).orElse(null);
+        if (company == null) {
+            document.setSuccess(false);
+            document.setErrorMessage(String.format("Company with name %s isn`t found", companyName));
+            return document;
+        }
+
+        return changeDocument(company.getId(), document);
     }
 }
