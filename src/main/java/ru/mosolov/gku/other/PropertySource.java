@@ -22,16 +22,16 @@ public class PropertySource {
     private String endLockChangeDoc;
 
     @Value("total.doc.workflow: 10")
-    private int totalDocWorkflow;
+    private String totalDocWorkflow;
 
     @Value("between.doc.workflow: 2")
-    private int betweenDocWorkflow;
+    private String betweenDocWorkflow;
 
     @Value("minute.restriction.create.doc: 60")
-    private int minuteRestrictionCreateDoc;
+    private String minuteRestrictionCreateDoc;
 
     @Value("count.restriction.create.doc: 5")
-    private int countRestrictionCreateDoc;
+    private String countRestrictionCreateDoc;
 
     public LocalDateTime getStartLockTime (){
         return getLockTime(startLockChangeDoc, 0);

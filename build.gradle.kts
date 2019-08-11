@@ -27,17 +27,17 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc:2.1.7.RELEASE")
     implementation("org.springframework.boot:spring-boot-starter-security:2.1.7.RELEASE")
     implementation("org.springframework.boot:spring-boot-starter-aop")
-    /*implementation("org.springframework.security.oauth:spring-security-oauth2:2.3.6.RELEASE")*/
-    /*implementation("org.springframework.security:spring-security-jwt:1.0.10.RELEASE")*/
     implementation("com.h2database:h2")
-    implementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.security:spring-security-test")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
     runtime("org.springframework.boot:spring-boot-starter-tomcat")
 
-    testImplementation("org.codehaus.groovy:groovy-all:2.5.6")
-    testImplementation("org.spockframework:spock-core:1.2-groovy-2.5")
+    implementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.codehaus.groovy:groovy-all:2.5.8")
+    testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
+    testImplementation("org.spockframework:spock-spring:1.3-groovy-2.5")
 
     compileOnly("org.projectlombok:lombok:1.18.8")
     annotationProcessor("org.projectlombok:lombok:1.18.8")

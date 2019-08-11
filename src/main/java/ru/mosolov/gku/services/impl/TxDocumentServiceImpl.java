@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mosolov.gku.models.Company;
 import ru.mosolov.gku.models.Document;
+import ru.mosolov.gku.other.CheckUtils;
 import ru.mosolov.gku.other.PropertySource;
 import ru.mosolov.gku.repository.DocumentRepository;
 import ru.mosolov.gku.services.CompanyService;
@@ -43,7 +44,7 @@ public class TxDocumentServiceImpl implements TxDocumentService {
             document.setErrorMessage("Document can`t to have two equals companies for the docs workflow");
             return document;
         }
-        final int restTotal = propertySource.getTotalDocWorkflow();
+        final int restTotal = Integer.parseInt(propertySource.getTotalDocWorkflow());
         final String restrictOne = checkTotalDocWorkFlows(document.getCompany(), restTotal);
         if (!restrictOne.equals("success")) {
             document.setSuccess(false);
@@ -62,19 +63,19 @@ public class TxDocumentServiceImpl implements TxDocumentService {
 
             final int countDocWorkflow = documentService
                     .getOpenDocsBetweenTwoCompanies(document.getCompany(), document.getCounterCompany()).size();
-            if (countDocWorkflow >= propertySource.getBetweenDocWorkflow()) {
+            if (countDocWorkflow >= Integer.parseInt(propertySource.getBetweenDocWorkflow())) {
                 document.setSuccess(false);
                 document.setErrorMessage(String
                         .format("Companies already have creating %d docs workflow between it", countDocWorkflow));
             }
             final LocalDateTime now = LocalDateTime.now();
-            final LocalDateTime oldTime = now.minusMinutes(propertySource.getMinuteRestrictionCreateDoc());
+            final LocalDateTime oldTime = now.minusMinutes(Integer.parseInt(propertySource.getMinuteRestrictionCreateDoc()));
             List<Document> listDoc = documentService
                     .getOpenDocsBetweenDates(document.getCompany(), oldTime, now)
                     .stream()
                     .filter(doc -> doc
                             .getCompany().getId().equals(document.getCompany().getId())).collect(Collectors.toList());
-            if (listDoc.size() >= propertySource.getCountRestrictionCreateDoc()) {
+            if (listDoc.size() >= Integer.parseInt(propertySource.getCountRestrictionCreateDoc())) {
                 document.setSuccess(false);
                 document.setErrorMessage(String
                         .format("Company with name %s already have creating %d doc workflows for %d minute(s)." +
@@ -103,6 +104,13 @@ public class TxDocumentServiceImpl implements TxDocumentService {
 
     @Override
     public Document confirmDocument(final Integer companyId,final Document document) {
+
+        if (!CheckUtils.checkAbilityChangeDoc(propertySource.getStartLockTime(), propertySource.getEndLockTime())) {
+            document.setSuccess(false);
+            document.setErrorMessage(String.format("Prohibited confirm documents in period from %s to %s"
+                    , propertySource.getStartLockChangeDoc(), propertySource.getEndLockChangeDoc()));
+            return document;
+        }
 
         if (document.isDeleted()) {
             document.setSuccess(false);
@@ -221,11 +229,11 @@ public class TxDocumentServiceImpl implements TxDocumentService {
     @Override
     public Document changeDocument(final Integer companyId,final  Document document) {
 
-        final LocalDateTime now = LocalDateTime.now();
-
-        if (now.isAfter(propertySource.getStartLockTime())
-                && now.isBefore(propertySource.getEndLockTime())){
-
+        if (!CheckUtils.checkAbilityChangeDoc(propertySource.getStartLockTime(), propertySource.getEndLockTime())){
+            document.setSuccess(false);
+            document.setErrorMessage(String.format("Prohibited change documents in period from %s to %s"
+                    , propertySource.getStartLockChangeDoc(), propertySource.getEndLockChangeDoc()));
+            return document;
         }
 
         if (document.isDeleted()) {

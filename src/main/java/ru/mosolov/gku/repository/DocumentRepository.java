@@ -15,31 +15,37 @@ public interface DocumentRepository extends JpaRepository<Document, Integer> {
     Optional<Document> findByName(final String name);
     @Query(value = "select d " +
             "from Document d " +
+            "inner join d.company c "+
+            "inner join d.counterCompany cc " +
             "where d.dateClose is null " +
             "and d.dateDelete is null " +
             "and (" +
-            "(d.company.id = ?1 and not d.confirmCompany) " +
-            "or (d.counterCompany.id = ?1 and not d.confirmCounterCompany and d.confirmCompany))")
+            "(c.id = ?1 and d.confirmCompany <> TRUE) " +
+            "or (cc.id = ?1 and d.confirmCounterCompany <> TRUE and d.confirmCompany = TRUE))")
     Optional<List<Document>> getOpenDocs (final Integer companyId);
 
     @Query(value = "select d " +
             "from Document d " +
+            "inner join d.company c "+
+            "inner join d.counterCompany cc " +
             "where d.dateClose is null " +
             "and d.dateDelete is null " +
             "and (" +
-            "(d.company.id = ?1 and not d.confirmCompany) " +
-            "or (d.counterCompany.id = ?1 and not d.confirmCounterCompany and d.confirmCompany)) " +
+            "(c.id = ?1 and d.confirmCompany <> TRUE) " +
+            "or (cc.id = ?1 and d.confirmCounterCompany <> TRUE and d.confirmCompany = TRUE)) " +
             "and d.dateCreate between ?2 and ?3")
     Optional<List<Document>> getOpenDocsBetweenDates(final Integer companyId
             , final LocalDateTime startDate, final LocalDateTime endDate);
 
     @Query(value = "select d " +
             "from Document d " +
+            "inner join d.company c "+
+            "inner join d.counterCompany cc " +
             "where d.dateClose is null " +
             "and d.dateDelete is null " +
             "and (" +
-            "(d.company.id = ?1 and d.counterCompany.id = ?2) " +
-            "or (d.company.id = ?2 and d.counterCompany.id = ?1))")
+            "(c.id = ?1 and cc.id = ?2) " +
+            "or (c.id = ?2 and cc.id = ?1))")
     Optional<List<Document>> getOpenDocsBetweenTwoCompanies(final Integer compOneId, final Integer compTwoId);
 
 }

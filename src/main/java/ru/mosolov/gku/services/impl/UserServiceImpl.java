@@ -17,6 +17,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUser(final String name) {
 
-        return userRepository.findByName(name).orElse(null);
+        return userRepository.findByName(name).orElseGet(() -> {
+            final User errorUser = new User();
+            errorUser.setSuccess(false);
+            errorUser.setErrorMessage(String.format("User with name %s not found", name));
+            return errorUser;
+        });
     }
 }
