@@ -1,12 +1,11 @@
 package ru.mosolov.gku.models;
-
 import lombok.Data;
 
 import javax.persistence.*;
 
 @MappedSuperclass
 @Data
-public class BaseDao {
+abstract class BaseDao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -17,7 +16,7 @@ public class BaseDao {
     private String name;
 
     @Transient
-    private Boolean success;
+    private Boolean success = true;
 
     @Transient
     private String errorMessage;

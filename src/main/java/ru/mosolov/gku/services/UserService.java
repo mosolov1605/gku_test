@@ -4,5 +4,5 @@ import ru.mosolov.gku.models.User;
 
 public interface UserService {
 
-    public User getUser();
+    User getUser(final String name);
 }

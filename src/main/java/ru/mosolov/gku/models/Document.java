@@ -2,13 +2,13 @@ package ru.mosolov.gku.models;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
+import javax.persistence.*;
+
 @EqualsAndHashCode(callSuper = true)
-@Entity
 @Data
+@Entity
 public class Document extends BaseDao{
 
     @Lob

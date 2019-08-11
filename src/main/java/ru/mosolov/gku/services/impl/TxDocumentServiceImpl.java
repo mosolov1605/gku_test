@@ -5,33 +5,88 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mosolov.gku.models.Company;
 import ru.mosolov.gku.models.Document;
-import ru.mosolov.gku.repository.CompanyRepository;
+import ru.mosolov.gku.other.PropertySource;
 import ru.mosolov.gku.repository.DocumentRepository;
+import ru.mosolov.gku.services.CompanyService;
+import ru.mosolov.gku.services.DocumentService;
 import ru.mosolov.gku.services.TxDocumentService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class TxDocumentServiceImpl implements TxDocumentService {
 
     private DocumentRepository documentRepository;
-    private CompanyRepository companyRepository;
+    private CompanyService companyService;
+    private DocumentService documentService;
+    private PropertySource propertySource;
 
     @Autowired
-    public TxDocumentServiceImpl(final DocumentRepository documentRepository, CompanyRepository companyRepository) {
+    public TxDocumentServiceImpl(final DocumentRepository documentRepository,
+                                 final CompanyService companyService,
+                                 final PropertySource propertySource,
+                                 final DocumentService documentService) {
         this.documentRepository = documentRepository;
-        this.companyRepository = companyRepository;
+        this.companyService = companyService;
+        this.propertySource = propertySource;
+        this.documentService = documentService;
     }
 
     @Override
     public Document saveDocument(final Document document) {
+
         if (document.getCompany().getId().equals(document.getCounterCompany().getId())) {
             document.setSuccess(false);
             document.setErrorMessage("Document can`t to have two equals companies for the docs workflow");
             return document;
         }
+        final int restTotal = propertySource.getTotalDocWorkflow();
+        final String restrictOne = checkTotalDocWorkFlows(document.getCompany(), restTotal);
+        if (!restrictOne.equals("success")) {
+            document.setSuccess(false);
+            document.setErrorMessage(restrictOne);
+            return document;
+        }
+        final String restrictTwo = checkTotalDocWorkFlows(document.getCounterCompany(), restTotal);
+        if (!restrictTwo.equals("success")) {
+            document.setSuccess(false);
+            document.setErrorMessage(restrictTwo);
+            return document;
+        }
+
+        final Document docExist = documentService.getDocumentByName(document.getName());
+        if (!docExist.getSuccess()) {
+
+            final int countDocWorkflow = documentService
+                    .getOpenDocsBetweenTwoCompanies(document.getCompany(), document.getCounterCompany()).size();
+            if (countDocWorkflow >= propertySource.getBetweenDocWorkflow()) {
+                document.setSuccess(false);
+                document.setErrorMessage(String
+                        .format("Companies already have creating %d docs workflow between it", countDocWorkflow));
+            }
+            final LocalDateTime now = LocalDateTime.now();
+            final LocalDateTime oldTime = now.minusMinutes(propertySource.getMinuteRestrictionCreateDoc());
+            List<Document> listDoc = documentService
+                    .getOpenDocsBetweenDates(document.getCompany(), oldTime, now)
+                    .stream()
+                    .filter(doc -> doc
+                            .getCompany().getId().equals(document.getCompany().getId())).collect(Collectors.toList());
+            if (listDoc.size() >= propertySource.getCountRestrictionCreateDoc()) {
+                document.setSuccess(false);
+                document.setErrorMessage(String
+                        .format("Company with name %s already have creating %d doc workflows for %d minute(s)." +
+                                " This is overtime-restriction."
+                                , document.getCompany().getName()
+                                , propertySource.getCountRestrictionCreateDoc()
+                                , propertySource.getMinuteRestrictionCreateDoc()));
+                return document;
+            }
+        }
+
+
         return documentRepository.save(document);
     }
 
@@ -90,12 +145,7 @@ public class TxDocumentServiceImpl implements TxDocumentService {
 
     @Override
     public Document confirmDocument(final String companyName, final Document document) {
-        final Company company = companyRepository.findByName(companyName).orElseGet(()-> {
-            final Company errorCompany = new Company();
-            errorCompany.setSuccess(false);
-            errorCompany.setErrorMessage(String.format("Company with name = %s not found", companyName));
-            return errorCompany;
-        });
+        final Company company = companyService.getCompany(companyName);
         if (!company.getSuccess()) {
             document.setSuccess(false);
             document.setErrorMessage(company.getErrorMessage());
@@ -153,10 +203,10 @@ public class TxDocumentServiceImpl implements TxDocumentService {
 
     @Override
     public Document removeDocument(final String companyName,final Document document) {
-        Company company = companyRepository.findByName(companyName).orElse(null);
-        if (company == null) {
+        Company company = companyService.getCompany(companyName);
+        if (!company.getSuccess()) {
             document.setSuccess(false);
-            document.setErrorMessage(String.format("Company with name %s is not found", companyName));
+            document.setErrorMessage(company.getErrorMessage());
             return document;
         }
         return removeDocument(company.getId(), document);
@@ -170,6 +220,13 @@ public class TxDocumentServiceImpl implements TxDocumentService {
 
     @Override
     public Document changeDocument(final Integer companyId,final  Document document) {
+
+        final LocalDateTime now = LocalDateTime.now();
+
+        if (now.isAfter(propertySource.getStartLockTime())
+                && now.isBefore(propertySource.getEndLockTime())){
+
+        }
 
         if (document.isDeleted()) {
             document.setSuccess(false);
@@ -203,13 +260,22 @@ public class TxDocumentServiceImpl implements TxDocumentService {
     @Override
     public Document changeDocument(final String companyName,final  Document document) {
 
-        final Company company = companyRepository.findByName(companyName).orElse(null);
-        if (company == null) {
+        final Company company = companyService.getCompany(companyName);
+        if (!company.getSuccess()) {
             document.setSuccess(false);
-            document.setErrorMessage(String.format("Company with name %s isn`t found", companyName));
+            document.setErrorMessage(company.getErrorMessage());
             return document;
         }
 
         return changeDocument(company.getId(), document);
+    }
+
+    private String checkTotalDocWorkFlows(final Company company, final int restFlow) {
+        String result = "success";
+        if (documentService.getOpenDocs(company).size() > restFlow) {
+            result = String.format("Company with name %s have doing greater than with %d doc workflow"
+                            , company.getName(), restFlow);
+        }
+        return result;
     }
 }
